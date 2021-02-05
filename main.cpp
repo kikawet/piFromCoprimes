@@ -22,16 +22,12 @@ int main() {
   cpp_int limit = (cpp_int(1) << 128)
       , updatePeriod = (cpp_int(1) << 16);
   std::vector<std::future<void>> threads;
-
-  //calculations.reserve(numOfThreads);
   
   for(int i = 0; i < numOfThreads; ++i){    
     threads.push_back(std::move(std::async(std::launch::async,[&](){
       calculateValues(i, limit, updatePeriod);
     })));
-    
-    //threads[i].share();
-    
+        
     calculations.push_back(std::make_pair(0,0));
   }
 
