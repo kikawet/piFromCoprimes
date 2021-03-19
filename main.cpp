@@ -9,6 +9,7 @@
 #include <thread>
 #include <future>
 #include <chrono>
+#include <numeric>
 
 using namespace boost::multiprecision;
 using namespace std::chrono_literals;
