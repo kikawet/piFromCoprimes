@@ -52,7 +52,7 @@ jobs:
             wget -O wrapper.zip https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
             sudo unzip wrapper.zip -d /
             mkdir -p ~/wrapper
-            sudo cp --force --recursive build-wrapper-linux-x86/* ~/wrapper
+            sudo cp --force --recursive /build-wrapper-linux-x86/* ~/wrapper
           fi
       # build project
       - name: Create build dir
