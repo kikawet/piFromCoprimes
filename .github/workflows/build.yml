@@ -1,10 +1,12 @@
 name: Build
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
   pull_request:
     types: [opened, synchronize, reopened]
+    
 jobs:
   sonarcloud:
     name: SonarCloud
@@ -34,19 +36,28 @@ jobs:
             done
           fi
       # build project
-      - name: mkdir
+      - name: Create build dir
         run: mkdir build
-      - name: cmake build
+      - name: Cmake build
         run: cmake -Bbuild -H.
-      - name: cmake make
-        run: cmake --build build/ --target all
+#       - name: Cmake make
+#         run: cmake --build build/ --target all
+#         env:
+#           MAKEFLAGS: "-j2"
+      - name: Build Wrapper
+        run: build-wrapper-linux-x86-64 --out-dir build make all
         env:
           MAKEFLAGS: "-j2"
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        # You may pin to the exact commit or the version.
+        # uses: SonarSource/sonarcloud-github-action@de2e56b42aa84d0b1c5b622644ac17e505c9a049
+        uses: SonarSource/sonarcloud-github-action@v1.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args: >
+          # Additional arguments to the sonarcloud scanner
+          args: >  # optional
             -X
+          # Set the sonar.projectBaseDir analysis property
+          projectBaseDir: . # optional, default is .
