@@ -64,7 +64,7 @@ jobs:
 #         env:
 #           MAKEFLAGS: "-j2"
       - name: Build Wrapper
-        run: build-wrapper-linux-x86-64 --out-dir build make all
+        run: ~/wrapper/build-wrapper-linux-x86-64 --out-dir build make all
         env:
           MAKEFLAGS: "-j2"
       - name: SonarCloud Scan
