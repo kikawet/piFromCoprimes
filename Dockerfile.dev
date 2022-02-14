@@ -44,6 +44,6 @@ RUN cd /home && wget http://downloads.sourceforge.net/project/boost/boost/${BOOS
 RUN clang++ -pthread -std=c++17 -O3 -o main main.cpp
 
 # This command runs your application, comment out this line to compile only
-CMD ["./main"]
+CMD ["bash"]
 
 LABEL Name=pifromcoprimes Version=0.0.1
