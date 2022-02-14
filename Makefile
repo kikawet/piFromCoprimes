@@ -1,3 +1,3 @@
 all:
-  cmake -Bbuild -H.
-  cmake --build build/ --target all
+	cmake -Bbuild -H.
+	cmake --build build/ --target all
