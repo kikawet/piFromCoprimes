@@ -57,14 +57,14 @@ jobs:
       # build project
       - name: Create build dir
         run: mkdir build
-      - name: Cmake build
-        run: cmake -Bbuild -H.
+#       - name: Cmake build
+#         run: cmake -Bbuild -H.
 #       - name: Cmake make
 #         run: cmake --build build/ --target all
 #         env:
 #           MAKEFLAGS: "-j2"
       - name: Build Wrapper
-        run: ~/wrapper/build-wrapper-linux-x86-64 --out-dir build cmake --build build/ --target all
+        run: ~/wrapper/build-wrapper-linux-x86-64 --out-dir build (cmake -Bbuild -H. && cmake --build build/ --target all)
         env:
           MAKEFLAGS: "-j2"
       - name: SonarCloud Scan
