@@ -22,6 +22,6 @@ script:
   # file to see the specific configuration
   - sonar-scanner
 
-cache: ccache
+cache:
   directories:
     - '$HOME/.sonar/cache'
