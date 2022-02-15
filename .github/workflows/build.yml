@@ -70,7 +70,7 @@ jobs:
 #         env:
 #           MAKEFLAGS: "-j2"
       - name: Build Wrapper
-        run: ~/wrapper/build-wrapper-linux-x86-64 --out-dir build clang++ -pthread -std=c++17 -O3 -o main main.cpp
+        run: ~/wrapper/build-wrapper-linux-x86-64 --out-dir build clang++ -pthread -std=c++17 -O3 -o build/main main.cpp
         env:
           MAKEFLAGS: "-j2"
       - name: SonarCloud Scan
