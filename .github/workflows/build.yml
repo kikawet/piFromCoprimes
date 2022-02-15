@@ -35,17 +35,36 @@ jobs:
                 dpkg -L $dep | while IFS= read -r f; do if test -f $f; then echo $f; fi; done | xargs cp --parents --target-directory ~/boost/
             done
           fi
+      - name: Cache Sonar Build Wrapper
+        uses: actions/cache@v1.0.3
+        id: cache-sonar-build
+        with:
+          path: "~/wrapper"
+          key: build-wrapper-linux-x86
+      - name: Install Sonar Build Wrapper
+        env:
+          CACHE_HIT: ${{steps.cache-sonar-build.outputs.cache-hit}}
+        run: |
+          if [[ "$CACHE_HIT" == 'true' ]]; then
+            sudo cp --force --recursive ~/wrapper/* /
+          else
+            sudo apt-get update && sudo apt-get install -yq wget unzip
+            wget -O wrapper.zip https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+            sudo unzip wrapper.zip -d /
+            mkdir -p ~/wrapper
+            sudo cp --force --recursive /build-wrapper-linux-x86/* ~/wrapper
+          fi
       # build project
       - name: Create build dir
         run: mkdir build
-      - name: Cmake build
-        run: cmake -Bbuild -H.
+#       - name: Cmake build
+#         run: cmake -Bbuild -H.
 #       - name: Cmake make
 #         run: cmake --build build/ --target all
 #         env:
 #           MAKEFLAGS: "-j2"
       - name: Build Wrapper
-        run: build-wrapper-linux-x86-64 --out-dir build make all
+        run: ~/wrapper/build-wrapper-linux-x86-64 --out-dir build make all
         env:
           MAKEFLAGS: "-j2"
       - name: SonarCloud Scan
