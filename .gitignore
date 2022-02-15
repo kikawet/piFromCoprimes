@@ -2,3 +2,5 @@ PI.txt
 main
 .vscode
 build
+bw-output
+*.zip
