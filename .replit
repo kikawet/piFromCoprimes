@@ -1,3 +1,0 @@
-run="clang++-7 -pthread -std=c++17 -O3 -o main main.cpp \n ./main"
-language="cpp"
-

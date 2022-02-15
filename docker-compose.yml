@@ -1,8 +1,0 @@
-version: '3.4'
-
-services:
-  pifromcoprimes:
-    image: pifromcoprimes
-    build:
-      context: .
-      dockerfile: ./Dockerfile.dev
