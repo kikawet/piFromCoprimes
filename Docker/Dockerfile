@@ -4,48 +4,20 @@ FROM debian:${VARIANT}
 # Install dependencies
 RUN apt-get -qq update; \
     apt-get install -qqy --no-install-recommends \
-        ca-certificates \
-        autoconf automake cmake dpkg-dev file git make patch \
-        libc-dev libc++-dev libgcc-8-dev libstdc++-8-dev  \
-        dirmngr gnupg2 lbzip2 wget xz-utils libtinfo5; \
+        libstdc++-7-dev clang libboost-all-dev; \
     rm -rf /var/lib/apt/lists/*
-
-# Signing keys
-ENV GPG_KEYS 09C4E7007CB2EFFB A2C794A986419D8A B4468DF4E95C63DC D23DD2C20DD88BA2 8F0871F202119294 0FC3042E345AD05D
-
-# Retrieve keys
-RUN gpg --batch --keyserver keyserver.ubuntu.com --recv-keys $GPG_KEYS
-
-# Version info
-ENV LLVM_RELEASE 7
-ENV LLVM_VERSION 7.0.1
-
-# Install Clang and LLVM
-COPY ./Docker/install-clang.sh .
-RUN ./install-clang.sh
-
-ARG BOOST_VERSION=1.75.0
-ARG BOOST_VERSION_=1_75_0
 
 # These commands copy your files into the specified directory in the image
 # and set that as the working location
 
-COPY main.cpp /usr/src/pifromcoprimes/main.cpp
+RUN mkdir -p /usr/src/pifromcoprimes
 WORKDIR /usr/src/pifromcoprimes
-
-RUN cd /home && wget http://downloads.sourceforge.net/project/boost/boost/${BOOST_VERSION}/boost_${BOOST_VERSION_}.tar.gz \
-  && tar xfz boost_${BOOST_VERSION_}.tar.gz \
-  && rm boost_${BOOST_VERSION_}.tar.gz \
-  && cd boost_${BOOST_VERSION_} \
-  && ./bootstrap.sh --prefix=/usr/local --with-libraries=program_options \
-  && ./b2 install \
-  && cd /home \
-  && rm -rf boost_${BOOST_VERSION_}
+COPY main.cpp main.cpp
 
 # This command compiles your app using GCC, adjust for your source code
 RUN clang++ -pthread -std=c++17 -O3 -o main main.cpp
 
 # This command runs your application, comment out this line to compile only
-# CMD ["main"]
+CMD ["bash", "-c", "./main"]
 
 LABEL Name=pifromcoprimes Version=0.0.1
