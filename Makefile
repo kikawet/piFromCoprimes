@@ -1,2 +1,2 @@
 all:
-	clang++ -Wall -O0 -fprofile-arcs -std=c++17 -o build/main src/main.cpp
+	clang++ -Wall -O0 -fprofile-arcs -std=c++17 -o build/main main.cpp
