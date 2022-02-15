@@ -55,7 +55,8 @@ jobs:
             sudo cp --force --recursive /build-wrapper-linux-x86/* ~/wrapper
           fi
       - name: Install Clang
-        run: sudo ./Docker/install-clang.sh
+        run: |
+          sudo bash ./Docker/install-clang.sh
       # build project
       - name: Create build dir
         run: mkdir build
