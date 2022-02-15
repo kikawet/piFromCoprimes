@@ -1,5 +1,8 @@
 sudo: false
+language: c++
+compiler: clang
 
+os: linux
 addons:
   sonarcloud:
     organization: "kikawet"
@@ -19,6 +22,6 @@ script:
   # file to see the specific configuration
   - sonar-scanner
 
-cache:
+cache: ccache
   directories:
     - '$HOME/.sonar/cache'
