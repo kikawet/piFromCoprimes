@@ -54,6 +54,9 @@ jobs:
             mkdir -p ~/wrapper
             sudo cp --force --recursive /build-wrapper-linux-x86/* ~/wrapper
           fi
+      - name: Install Keys
+        run: |
+          sudo gpg --batch --keyserver keyserver.ubuntu.com --recv-keys 09C4E7007CB2EFFB A2C794A986419D8A B4468DF4E95C63DC D23DD2C20DD88BA2 8F0871F202119294 0FC3042E345AD05D
       - name: Install Clang
         run: |
           sudo bash ./Docker/install-clang.sh
