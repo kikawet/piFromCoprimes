@@ -3,6 +3,7 @@ set -eou pipefail
 
 # Determine architecture
 ARCH=$(dpkg --print-architecture)
+LLVM_VERSION=${LLVM_VERSION:-"7.0.1"}
 
 # Default platform and download type
 MIRROR="llvm"
