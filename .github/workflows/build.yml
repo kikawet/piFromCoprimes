@@ -54,6 +54,8 @@ jobs:
             mkdir -p ~/wrapper
             sudo cp --force --recursive /build-wrapper-linux-x86/* ~/wrapper
           fi
+      - name: Install Clang
+        run: sudo apt-get update && sudo apt-get install -yq clang
       # build project
       - name: Create build dir
         run: mkdir build
@@ -64,7 +66,7 @@ jobs:
 #         env:
 #           MAKEFLAGS: "-j2"
       - name: Build Wrapper
-        run: ~/wrapper/build-wrapper-linux-x86-64 --out-dir build make all
+        run: ~/wrapper/build-wrapper-linux-x86-64 --out-dir build clang++ -pthread -std=c++17 -O3 -o main main.cpp
         env:
           MAKEFLAGS: "-j2"
       - name: SonarCloud Scan
