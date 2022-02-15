@@ -1,3 +1,2 @@
 all:
-	cmake -Bbuild -H.
-	cmake --build build/ --target all
+	clang++ -Wall -O0 -fprofile-arcs -std=c++17 -o build/main src/main.cpp
