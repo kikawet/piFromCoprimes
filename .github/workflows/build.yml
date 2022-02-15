@@ -56,7 +56,7 @@ jobs:
           fi
       - name: Install Clang
         run: |
-          ./Docker/install-clang.sh
+          sudo bash ./Docker/install-clang.sh
       # build project
       - name: Create build dir
         run: mkdir build
