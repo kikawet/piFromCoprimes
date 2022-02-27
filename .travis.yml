@@ -17,7 +17,7 @@ addons:
     - libboost-all-dev
 
 before_install:
-    docker build --pull --rm -f "Docker\Dockerfile" -t kikawet/pifromcoprimes:latest .
+    docker build --pull --rm -f "Docker/Dockerfile" -t kikawet/pifromcoprimes:latest .
 
 script:
   - make clean
