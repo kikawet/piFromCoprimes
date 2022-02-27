@@ -18,9 +18,10 @@ addons:
 
 before_install:
   if [ "$TRAVIS_BRANCH" == "travis" ]; then
-    docker build --pull --rm -f "Docker\Dockerfile" -t kikawet/pifromcoprimes:latest .
+    echo before_completed
   fi
 
+    # docker build --pull --rm -f "Docker\Dockerfile" -t kikawet/pifromcoprimes:latest .
 script:
   - make clean
   # Wraps the compilation with the Build Wrapper to generate configuration (used
