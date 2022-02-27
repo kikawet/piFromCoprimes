@@ -17,11 +17,8 @@ addons:
     - libboost-all-dev
 
 before_install:
-  if [ "$TRAVIS_BRANCH" == "travis" ]; then
-    echo before_completed
-  fi
+    docker build --pull --rm -f "Docker\Dockerfile" -t kikawet/pifromcoprimes:latest .
 
-    # docker build --pull --rm -f "Docker\Dockerfile" -t kikawet/pifromcoprimes:latest .
 script:
   - make clean
   # Wraps the compilation with the Build Wrapper to generate configuration (used
