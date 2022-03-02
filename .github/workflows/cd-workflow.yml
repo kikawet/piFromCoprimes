@@ -19,9 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get -qq update
-          sudo apt-get install -qq --no-install-recommends libstdc++-7-dev clang libboost-all-dev
+          sudo apt-get install -qq --no-install-recommends libstdc++-7-dev build-essential libboost-all-dev
       - name: Download and set up build-wrapper
         env:
           BUILD_WRAPPER_DOWNLOAD_URL: ${{ env.SONAR_SERVER_URL }}/static/cpp/build-wrapper-linux-x86.zip
