@@ -74,6 +74,7 @@ jobs:
       uses: docker/build-push-action@v1
       with:
         context: .
+        path: Docker
         username: ${{github.actor}}
         password: ${{secrets.GITHUB_TOKEN}}
         registry: docker.pkg.github.com
