@@ -72,12 +72,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
     
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-
     - name: Login to DockerHub
       uses: docker/login-action@v1 
       with:
@@ -99,5 +93,5 @@ jobs:
         platforms: linux/amd64
         push: true
         tags: |
-          kikawet/pifromcoprimes:latest
-          ghcr.io/kikawet/pifromcoprimes:latest
+          ${{ github.repository_owner }}/pifromcoprimes:latest
+          ghcr.io/${{ github.repository_owner }}/pifromcoprimes:latest
