@@ -67,8 +67,7 @@ jobs:
   Build-and-Push-Docker-Image:
     runs-on: ubuntu-latest
     name: Docker Build, Tag, Push
-    permissions: 
-      packages: write
+    permissions: write-all
     # if: ${{ github.ref == 'refs/heads/master' }} # only deploy when run on master
     steps:
     - name: Checkout
