@@ -1,4 +1,4 @@
-# PiFromCoprimes [![CI/CD](https://github.com/kikawet/piFromCoprimes/actions/workflows/cd-workflow.yml/badge.svg?branch=master)](https://github.com/kikawet/piFromCoprimes/actions/workflows/cd-workflow.yml)
+# PiFromCoprimes [![CI/CD](https://github.com/kikawet/piFromCoprimes/actions/workflows/cd-workflow.yml/badge.svg?branch=master)](https://github.com/kikawet/piFromCoprimes/actions/workflows/cd-workflow.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kikawet_piFromCoprimes&metric=alert_status)](https://sonarcloud.io/dashboard?id=kikawet_piFromCoprimes)
 
 ## English 🇬🇧/🇺🇲
 Inspired in Matt Parker video "[Generating π from 1,000 random numbers](https://youtu.be/RZBhSi_PwHU)"
