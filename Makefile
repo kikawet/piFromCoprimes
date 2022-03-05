@@ -1,6 +1,6 @@
 all:
 	mkdir build
-	clang++ -Wall -O0 -fprofile-arcs -pthread -std=c++17 -o build/main main.cpp
+	g++ -Wall -O0 -pthread -std=c++17 -o build/main main.cpp
 
 clean:
 	rm -rf build
