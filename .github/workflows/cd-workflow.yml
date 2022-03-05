@@ -67,6 +67,8 @@ jobs:
   Build-and-Push-Docker-Image:
     runs-on: ubuntu-latest
     name: Docker Build, Tag, Push
+    permissions: 
+      packages: write
     # if: ${{ github.ref == 'refs/heads/master' }} # only deploy when run on master
     steps:
     - name: Checkout
@@ -83,7 +85,7 @@ jobs:
       with:
         registry: docker.pkg.github.com
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.PACKAGE_TOKEN }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build container image
       uses: docker/build-push-action@v2.9.0
