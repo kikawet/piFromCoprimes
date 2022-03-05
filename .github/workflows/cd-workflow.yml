@@ -64,8 +64,9 @@ jobs:
   Build-and-Push-Docker-Image:
     runs-on: ubuntu-latest
     name: Docker Build, Tag, Push
-    if: github.ref == 'refs/heads/travis'
-    steps:
+    # if: ${{ github.ref == 'refs/heads/travis' }}
+    steps:    
+    - run: echo ${{ github.ref }}
     - name: Checkout
       uses: actions/checkout@v1
 
