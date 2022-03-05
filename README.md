@@ -1,4 +1,6 @@
-# English 🇬🇧/🇺🇲
+# PiFromCoprimes [![CI/CD](https://github.com/kikawet/piFromCoprimes/actions/workflows/cd-workflow.yml/badge.svg?branch=master)](https://github.com/kikawet/piFromCoprimes/actions/workflows/cd-workflow.yml)
+
+## English 🇬🇧/🇺🇲
 Inspired in Matt Parker video "[Generating π from 1,000 random numbers](https://youtu.be/RZBhSi_PwHU)"
 
 In case you want to run it you can do it in [the Repl.it post I created](https://repl.it/talk/share/Calculate-Pi-from-random-numbers/119909#main.cpp). 
@@ -14,7 +16,7 @@ It may take a time so to don't wait for it to finish it has a refresh factor, cu
 
 The console is going to print the next number after ~4 seconds.
 
-## Pseudocode
+### Pseudocode
 > **let** numOfThreads = 5  
 > **let** threadVector[]
 > **let** math[] // vector to store the partial sum of each thread  
@@ -28,7 +30,7 @@ Once every thread is started the main thread waits 2 seconds and iterates the **
 
 
 
-# Castellano 🇪🇸/🇲🇽
+## Castellano 🇪🇸/🇲🇽
 Inspirado por el video de Matt Parker "[Generating π from 1,000 random numbers](https://youtu.be/RZBhSi_PwHU)"
 
 Si quieres ejecutar el proyecto he creado un [post en Repl.it](https://repl.it/talk/share/Calculate-Pi-from-random-numbers/119909#main.cpp).
@@ -43,7 +45,7 @@ por defecto se calculan 2<sup>128</sup> (340.282.366.920.938.463.463.374.607.431
 Como puede tardar en calcular todas esas iteraciones hay un factor interno para calcular las variables, inicialmente vale 2<sup>16</sup> (65.536).
 
 Cada ~4 segundos se muestra la siguiente estimación con los números generados hasta el momento.
-## Pseudocódigo
+### Pseudocódigo
 > **let** numDeHilos = 5  
 > **let** vectorHilos[]
 > **let** mates[] // vector para almacenar las sumas parciales de cada hilo 
