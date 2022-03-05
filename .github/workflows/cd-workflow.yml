@@ -12,7 +12,8 @@ env:
   BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
 
 jobs:
-  Build project:
+  build:
+    name: Build Project
     if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     steps:
@@ -39,9 +40,10 @@ jobs:
           name: sonar build
           path: ${{ env.BUILD_WRAPPER_OUT_DIR }}/
 
-  Run Sonar-Scanner:
+  sonar:
+    name: Run Sonar-Scanner
     runs-on: ubuntu-latest
-    needs: 'Build project'
+    needs: build
     steps:
       - uses: actions/checkout@v1
       - uses: actions/download-artifact@master
