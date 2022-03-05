@@ -81,7 +81,7 @@ jobs:
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1 
       with:
-        registry: docker.pkg.github.com
+        registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -93,4 +93,4 @@ jobs:
         platforms: linux/amd64
         push: true
         tags: |
-          docker.pkg.github.com/kikawet/pifromcoprimes:latest
+          ghcr.io/kikawet/pifromcoprimes:latest
