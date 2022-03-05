@@ -1,8 +1,10 @@
-# This file wont do us much good in this location, make sure you change the path as directed to continue!
+name: CI/CD
 
-name: Docker CD
-
-on: [push, pull_request]
+on: 
+  push:
+    branches:
+      - 'main'
+  pull_request:
 
 env:
   SONAR_SCANNER_VERSION: 4.4.0.2170
@@ -62,7 +64,7 @@ jobs:
   Build-and-Push-Docker-Image:
     runs-on: ubuntu-latest
     name: Docker Build, Tag, Push
-    if: ${{ github.ref == 'refs/heads/travis' }}
+    if: ${{ github.ref == 'refs/heads/master' }}
     steps:
     - name: Checkout
       uses: actions/checkout@v1
