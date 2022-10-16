@@ -13,22 +13,21 @@
 using namespace boost::multiprecision;
 using namespace std::chrono_literals;
 
-std::vector<std::pair<cpp_int, cpp_int>> calculations;
+std::vector<std::pair<cpp_int &, cpp_int &>> calculations;
 
-void calculateValues(int index, const cpp_int &limit, const cpp_int &logPeriod);
+void calculateValues(int index, const cpp_int &limit);
+
+cpp_dec_float_100 getPi(const cpp_int &numOfCoprimes, const cpp_int &totalNumbers);
 
 int main() {
     const int numOfThreads = 5;
-    cpp_int limit = (cpp_int(1) << 128)
-    , updatePeriod = (cpp_int(1) << 16);
+    cpp_int limit = (cpp_int(1) << 128);
     std::vector<std::future<void>> threads;
 
     for (int i = 0; i < numOfThreads; ++i) {
         threads.push_back(std::async(std::launch::async, [&]() {
-            calculateValues(i, limit, updatePeriod);
+            calculateValues(i, limit);
         }));
-
-        calculations.emplace_back(0, 0);
     }
 
     std::cout << "Pi = " << std::setprecision(20) << std::endl;
@@ -48,14 +47,8 @@ int main() {
             totalNumbers += cal.second;
         }
 
-        std::cout << sqrt(
-                6 / (
-                        (cpp_dec_float_100) numOfCoprimes /
-                        (cpp_dec_float_100) totalNumbers
-                )
-        ) << std::endl;
+        std::cout << getPi(numOfCoprimes, totalNumbers) << std::endl;
     }
-
 
     std::cout << "All threads are over" << std::endl;
 
@@ -68,26 +61,28 @@ int main() {
     std::ofstream file("PI.txt");
 
 
-    file << "PI = " << std::setprecision(100) << sqrt(
-            6 / (
-                    (cpp_dec_float_100) numOfCoprimes /
-                    (cpp_dec_float_100) totalNumbers
-            )
-    ) << std::endl;
+    file << "PI = " << std::setprecision(100) << getPi(numOfCoprimes, totalNumbers) << std::endl;
 
     file.close();
     std::cout << "Finished storing result into PI.txt" << std::endl;
 }
 
-void calculateValues(int index, const cpp_int &limit, const cpp_int &logPeriod) {
+cpp_dec_float_100 getPi(const cpp_int &numOfCoprimes, const cpp_int &totalNumbers) {
+    return sqrt(
+            6 / (
+                    (cpp_dec_float_100) numOfCoprimes /
+                    (cpp_dec_float_100) totalNumbers
+            )
+    );
+}
+
+void calculateValues(int index, const cpp_int &limit) {
     std::random_device rd;
     cpp_int numOfCoprimes = 0, iteration = 0;
+    calculations[index] = std::make_pair(numOfCoprimes, iteration);
 
     while (++iteration < limit) {
         if (std::gcd(rd(), rd()) == 1)
             ++numOfCoprimes;
-
-        if (iteration % logPeriod == 0)
-            calculations[index] = std::make_pair(numOfCoprimes, iteration);
     }
 }
