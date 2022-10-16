@@ -5,3 +5,4 @@ build
 bw-output
 *.zip
 .vs
+.idea
