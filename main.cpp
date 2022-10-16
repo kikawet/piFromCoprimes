@@ -1,19 +1,18 @@
 #include <iostream>
-#include <random>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <boost/integer/common_factor.hpp>
 #include <fstream>
+#include <random>
 #include <vector>
-#include <utility>
 #include <thread>
 #include <future>
 #include <chrono>
-#include <numeric>
 
 using namespace boost::multiprecision;
 using namespace std::chrono_literals;
 
-std::vector<std::pair<cpp_int &, cpp_int &>> calculations;
+std::vector<std::pair<std::shared_ptr<cpp_int>, std::shared_ptr<cpp_int>>> calculations;
 
 void calculateValues(int index, const cpp_int &limit);
 
@@ -24,8 +23,11 @@ int main() {
     cpp_int limit = (cpp_int(1) << 128);
     std::vector<std::future<void>> threads;
 
+    calculations.resize(numOfThreads,
+                        std::make_pair(std::make_shared<cpp_int>(0), std::make_shared<cpp_int>(0)));
+
     for (int i = 0; i < numOfThreads; ++i) {
-        threads.push_back(std::async(std::launch::async, [&]() {
+        threads.push_back(std::async(std::launch::async, [&limit, i]() {
             calculateValues(i, limit);
         }));
     }
@@ -42,9 +44,10 @@ int main() {
 
         std::this_thread::sleep_for(2s);
         numOfCoprimes = 0, totalNumbers = 0;
+
         for (const auto &cal: calculations) {
-            numOfCoprimes += cal.first;
-            totalNumbers += cal.second;
+            numOfCoprimes += *cal.first;
+            totalNumbers += *cal.second;
         }
 
         std::cout << getPi(numOfCoprimes, totalNumbers) << std::endl;
@@ -54,8 +57,8 @@ int main() {
 
     numOfCoprimes = 0, totalNumbers = 0;
     for (const auto &cal: calculations) {
-        numOfCoprimes += cal.first;
-        totalNumbers += cal.second;
+        numOfCoprimes += *cal.first;
+        totalNumbers += *cal.second;
     }
 
     std::ofstream file("PI.txt");
@@ -77,12 +80,12 @@ cpp_dec_float_100 getPi(const cpp_int &numOfCoprimes, const cpp_int &totalNumber
 }
 
 void calculateValues(int index, const cpp_int &limit) {
-    std::random_device rd;
-    cpp_int numOfCoprimes = 0, iteration = 0;
-    calculations[index] = std::make_pair(numOfCoprimes, iteration);
+    std::random_device gen;
+    std::shared_ptr<cpp_int> numOfCoprimes = calculations[index].first,
+            iteration = calculations[index].second;
 
-    while (++iteration < limit) {
-        if (std::gcd(rd(), rd()) == 1)
-            ++numOfCoprimes;
+    while (++*iteration < limit) {
+        if (boost::integer::gcd(gen(), gen()) == 1)
+            ++*numOfCoprimes;
     }
 }
