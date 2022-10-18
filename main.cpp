@@ -35,7 +35,7 @@ int main() {
 
     while (!threads.empty()) {
         const auto firstRemove = std::remove_if(threads.begin(), threads.end(), [](auto &thread) {
-            return thread.try_join_for(boost::chrono::seconds(1));//wait_for(1s) == std::future_status::ready;
+            return thread.try_join_for(boost::chrono::seconds(1));
         });
 
         threads.erase(firstRemove, threads.end());
