@@ -1,11 +1,11 @@
-#include <iostream>
-#include <boost/multiprecision/cpp_int.hpp>
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/integer/common_factor.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/smart_ptr/atomic_shared_ptr.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
 #include <fstream>
+#include <iostream>
 #include <random>
 #include <vector>
 
@@ -69,6 +69,8 @@ int main() {
 
     file.close();
     std::cout << "Finished storing result into PI.txt" << std::endl;
+
+    return EXIT_SUCCESS;
 }
 
 std::ostream &outputPi(std::ostream &output, const cpp_int &numOfCoprimes, const cpp_int &totalNumbers) {
@@ -81,12 +83,26 @@ std::ostream &outputPi(std::ostream &output, const cpp_int &numOfCoprimes, const
 }
 
 void calculateValues(TypeNumTotalPair &pair, const cpp_int &limit) {
-    std::random_device gen;
+    std::random_device rd;
+    boost::random::mt11213b gen(rd());
     boost::shared_ptr<cpp_int> numOfCoprimes = pair.first,
             iteration = pair.second;
+    boost::array<unsigned int, 2048> buffer1{};
+    boost::array<unsigned int, buffer1.static_size> buffer2{};
 
-    while (++*iteration < limit) {
-        if (boost::integer::gcd(gen(), gen()) == 1)
-            ++*numOfCoprimes;
+    while (*iteration < limit) {
+        gen.generate(buffer1.begin(), buffer1.end());
+        gen.generate(buffer2.begin(), buffer2.end());
+
+        *numOfCoprimes += std::transform_reduce(buffer1.begin(), buffer1.end(),
+                                                buffer2.begin(),
+                                                0L,
+                                                std::plus{},
+                                                [](auto itemBuffer1, auto itemBuffer2) {
+                                                    return boost::integer::gcd(itemBuffer1, itemBuffer2) == 1;
+                                                }
+        );
+
+        *iteration += buffer1.static_size;
     }
 }
