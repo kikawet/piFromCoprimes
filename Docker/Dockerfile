@@ -18,4 +18,4 @@ RUN g++ -O3 -Wall -Wextra -pedantic -std=c++17 -o main main.cpp -pthread -lboost
 # This command runs your application, comment out this line to compile only
 CMD ["/bin/sh", "-c", "./main"]
 
-LABEL Name=pifromcoprimes Version=0.0.1
+LABEL Name=pifromcoprimes Version=1.0.0

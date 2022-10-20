@@ -103,6 +103,6 @@ void calculateValues(TypeNumTotalPair &pair, const cpp_int &limit) {
                                                 }
         );
 
-        *iteration += buffer1.static_size;
+        *iteration += buffer1.max_size();
     }
 }
