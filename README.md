@@ -11,10 +11,9 @@ Once is over is going to generate a file called _PI.txt_ with 100 digits in case
 If you're going to download the code and run it in your machine you're going to need [Boost](https://www.boost.org/) and C++17.
 
 This program runs in multithreading (5 threads by default) you can change the number of threads in the code and how many iterations is going to do,
-so far is going to run 2<sup>128</sup> (340.282.366.920.938.463.463.374.607.431.768.211.456). 
-It may take a time so to don't wait for it to finish it has a refresh factor, currently after 2<sup>16</sup> (65.536) iterations is going to refresh.
+so far is going to run 2<sup>128</sup> (340.282.366.920.938.463.463.374.607.431.768.211.456).
 
-The console is going to print the next number after ~4 seconds.
+The console is going to print the next approximation after ~4 seconds (the time is going to change if you change the number of threads).
 
 ### Pseudocode
 > **let** numOfThreads = 5  
@@ -42,9 +41,8 @@ En caso de quere descargar el proyecto para ejecutarlo en local es necesario ten
 
 La aplicación se ejecuta en paralelo (5 hilos por defecto) se puede cambiar el número de hilos dentro del código así como el número total de iteracionesa ejecutar, 
 por defecto se calculan 2<sup>128</sup> (340.282.366.920.938.463.463.374.607.431.768.211.456) iteraciones.
-Como puede tardar en calcular todas esas iteraciones hay un factor interno para calcular las variables, inicialmente vale 2<sup>16</sup> (65.536).
 
-Cada ~4 segundos se muestra la siguiente estimación con los números generados hasta el momento.
+Cada ~4 segundos (el tiempo varia en función del número de hilos) se muestra la siguiente estimación con los números generados hasta el momento.
 ### Pseudocódigo
 > **let** numDeHilos = 5  
 > **let** vectorHilos[]
