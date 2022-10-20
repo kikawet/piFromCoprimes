@@ -13,7 +13,7 @@ WORKDIR /usr/src/pifromcoprimes
 COPY main.cpp main.cpp
 
 # This command compiles your app using GCC, adjust for your source code
-RUN g++ -pthread -std=c++17 -O3 -o main main.cpp
+RUN g++ -O3 -Wall -Wextra -pedantic -std=c++17 -o main main.cpp -pthread -lboost_thread -lboost_chrono -lboost_random
 
 # This command runs your application, comment out this line to compile only
 CMD ["/bin/sh", "-c", "./main"]
