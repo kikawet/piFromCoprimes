@@ -16,31 +16,43 @@
 using namespace boost::multiprecision;
 using namespace std::chrono_literals;
 
-using SharedInt = boost::shared_ptr<cpp_int>;
+#define NumOfThreads 5
 
-std::vector<SharedInt> numOfCoprimes;
-std::vector<SharedInt> numIterations;
+std::vector<cpp_int> numCoprimesBuffer(NumOfThreads);
+std::vector<cpp_int> numIterationsBuffer(NumOfThreads);
 
-void calculateValues(const SharedInt numOfCoprimes, const SharedInt iterations, const cpp_int &limit);
+struct CalculationParams
+{
+    cpp_int *const numCoprimes;
+    cpp_int *const numIterations;
+    const cpp_int &limit;
+};
+
+void calculateValues(CalculationParams params);
 std::ostream &outputPi(std::ostream &output, const cpp_int &numOfCoprimes, const cpp_int &totalNumbers);
-cpp_int add(const std::vector<SharedInt> &nums);
 
 int main()
 {
-    const int numOfThreads = 5;
     const cpp_int &limit = (cpp_int(1) << 128);
     std::vector<boost::thread> threads;
 
-    for (int i = 0; i < numOfThreads; ++i)
+    for (int i = 0; i < NumOfThreads; ++i)
     {
-        numOfCoprimes.emplace_back(boost::make_shared<cpp_int>(0));
-        numIterations.emplace_back(boost::make_shared<cpp_int>(0));
-        threads.emplace_back(calculateValues, numOfCoprimes[i], numIterations[i], limit);
+        numCoprimesBuffer.emplace_back(0);
+        numIterationsBuffer.emplace_back(0);
+
+        threads.emplace_back(
+            calculateValues,
+            CalculationParams{
+                .numCoprimes = &numCoprimesBuffer[i],
+                .numIterations = &numIterationsBuffer[i],
+                .limit = limit,
+            });
     }
 
     std::cout << "Pi = " << std::setprecision(20) << std::endl;
 
-    cpp_int sumNumOfCoprimes, sumNumIterations;
+    cpp_int sumNumCoprimes, sumNumIterations;
     while (!threads.empty())
     {
         const auto firstRemove = std::remove_if(threads.begin(), threads.end(), [](auto &thread)
@@ -50,22 +62,22 @@ int main()
 
         boost::this_thread::sleep_for(boost::chrono::seconds(2));
 
-        sumNumOfCoprimes = add(numOfCoprimes);
-        sumNumIterations = add(numIterations);
+        sumNumCoprimes = boost::algorithm::reduce(numCoprimesBuffer, cpp_int(0));
+        sumNumIterations = boost::algorithm::reduce(numIterationsBuffer, cpp_int(0));
 
-        outputPi(std::cout, sumNumOfCoprimes, sumNumIterations) << '\n';
+        outputPi(std::cout, sumNumCoprimes, sumNumIterations) << '\n';
     }
 
     std::cout << "All threads are over" << std::endl;
 
-    sumNumOfCoprimes = add(numOfCoprimes);
-    sumNumIterations = add(numIterations);
+    sumNumCoprimes = boost::algorithm::reduce(numCoprimesBuffer, cpp_int(0));
+    sumNumIterations = boost::algorithm::reduce(numIterationsBuffer, cpp_int(0));
 
     std::ofstream file("PI.txt");
 
     outputPi(
         file << "PI = " << std::setprecision(100),
-        sumNumOfCoprimes,
+        sumNumCoprimes,
         sumNumIterations)
         << std::endl;
 
@@ -83,14 +95,16 @@ std::ostream &outputPi(std::ostream &output, const cpp_int &numOfCoprimes, const
                 (cpp_dec_float_100)totalNumbers));
 }
 
-void calculateValues(const SharedInt numOfCoprimes, const SharedInt iterations, const cpp_int &limit)
+void calculateValues(CalculationParams params)
 {
-    std::random_device rd;
-    boost::random::mt11213b gen(rd());
+    const uint32_t seed = std::random_device()();
+    boost::random::mt11213b gen(seed);
     boost::array<uint32_t, 4096> buffer;
 
     constexpr auto middle = buffer.static_size / 2;
     BOOST_STATIC_ASSERT_MSG(buffer.static_size % 2 == 0, "buffer size must be even");
+
+    const auto &[numOfCoprimes, iterations, limit] = params;
 
     while (*iterations < limit)
     {
@@ -107,15 +121,4 @@ void calculateValues(const SharedInt numOfCoprimes, const SharedInt iterations, 
 
         *iterations += middle;
     }
-}
-
-struct sum
-{
-    cpp_int operator()(const SharedInt &a, const SharedInt &b) const { return *a + *b; }
-    cpp_int operator()(const cpp_int &a, const SharedInt &b) const { return a + *b; }
-};
-
-cpp_int add(const std::vector<SharedInt> &nums)
-{
-    return boost::algorithm::reduce(nums.begin(), nums.end(), cpp_int(0), sum());
 }
