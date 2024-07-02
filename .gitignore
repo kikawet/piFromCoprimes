@@ -2,6 +2,8 @@ PI.txt
 main
 .vscode
 build
+release
+debug
 bw-output
 *.zip
 .vs
