@@ -1,10 +1,11 @@
 #include <boost/algorithm/cxx17/reduce.hpp>
 #include <boost/algorithm/cxx17/transform_reduce.hpp>
 #include <boost/integer/common_factor.hpp>
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
+#include <boost/smart_ptr/make_unique.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/thread/thread.hpp>
 #include <fstream>
@@ -16,16 +17,25 @@
 using namespace boost::multiprecision;
 using namespace std::chrono_literals;
 
+#define RandomsBufferSize 2048
 #define NumOfThreads 5
-
-std::vector<cpp_int> numCoprimesBuffer(NumOfThreads);
-std::vector<cpp_int> numIterationsBuffer(NumOfThreads);
 
 struct CalculationParams
 {
-    cpp_int *const numCoprimes;
-    cpp_int *const numIterations;
-    const cpp_int &limit;
+    cpp_int &numCoprimes;
+    cpp_int &numIterations;
+    const cpp_int &updatePeriod;
+    cpp_int minIterations;
+    boost::mutex &updatingMutex;
+    boost::interprocess::interprocess_semaphore &notifyChanges;
+};
+
+struct CalculationThread
+{
+    cpp_int numCoprimes;
+    cpp_int numIterations;
+    std::unique_ptr<boost::mutex> mutex;
+    std::unique_ptr<boost::thread> thread;
 };
 
 void calculateValues(CalculationParams params);
@@ -33,45 +43,68 @@ std::ostream &outputPi(std::ostream &output, const cpp_int &numOfCoprimes, const
 
 int main()
 {
-    const cpp_int &limit = (cpp_int(1) << 128);
-    std::vector<boost::thread> threads;
+    const cpp_int
+        minIterations = (cpp_int(1) << 128),
+        updatePeriod = (cpp_int(1) << 24);
+
+    cpp_int sumNumCoprimes, sumNumIterations;
+
+    std::vector<CalculationThread> threads;
+    threads.reserve(NumOfThreads);
+
+    boost::interprocess::interprocess_semaphore buffersUpdated(0);
 
     for (int i = 0; i < NumOfThreads; ++i)
     {
-        numCoprimesBuffer.emplace_back(0);
-        numIterationsBuffer.emplace_back(0);
+        auto threadMutex = std::make_unique<boost::mutex>();
+        threads.emplace_back(CalculationThread{
+            .numCoprimes = 0,
+            .numIterations = 0,
+            .mutex = std::move(threadMutex),
+            .thread = nullptr,
+        });
 
-        threads.emplace_back(
-            calculateValues,
-            CalculationParams{
-                .numCoprimes = &numCoprimesBuffer[i],
-                .numIterations = &numIterationsBuffer[i],
-                .limit = limit,
-            });
+        CalculationThread &thread = threads[i];
+        thread.thread =
+            std::make_unique<boost::thread>(
+                calculateValues,
+                CalculationParams{
+                    .numCoprimes = thread.numCoprimes,
+                    .numIterations = thread.numIterations,
+                    .updatePeriod = updatePeriod,
+                    .minIterations = minIterations,
+                    .updatingMutex = *threads[i].mutex,
+                    .notifyChanges = buffersUpdated,
+                });
     }
 
     std::cout << "Pi = " << std::setprecision(20) << std::endl;
 
-    cpp_int sumNumCoprimes, sumNumIterations;
     while (!threads.empty())
     {
-        const auto firstRemove = std::remove_if(threads.begin(), threads.end(), [](auto &thread)
-                                                { return thread.try_join_for(boost::chrono::seconds(1)); });
+        buffersUpdated.wait();
 
-        threads.erase(firstRemove, threads.end());
+        for (auto &thread : threads)
+        {
+            boost::lock_guard lock(*thread.mutex);
 
-        boost::this_thread::sleep_for(boost::chrono::seconds(2));
+            sumNumCoprimes += thread.numCoprimes;
+            sumNumIterations += thread.numIterations;
 
-        sumNumCoprimes = boost::algorithm::reduce(numCoprimesBuffer, cpp_int(0));
-        sumNumIterations = boost::algorithm::reduce(numIterationsBuffer, cpp_int(0));
+            thread.numCoprimes = 0;
+            thread.numIterations = 0;
+        }
 
         outputPi(std::cout, sumNumCoprimes, sumNumIterations) << '\n';
+
+        const auto firstRemove = std::remove_if(threads.begin(), threads.end(),
+                                                [](auto &thread)
+                                                { return thread.thread->try_join_for(boost::chrono::seconds(1)); });
+
+        threads.erase(firstRemove, threads.end());
     }
 
     std::cout << "All threads are over" << std::endl;
-
-    sumNumCoprimes = boost::algorithm::reduce(numCoprimesBuffer, cpp_int(0));
-    sumNumIterations = boost::algorithm::reduce(numIterationsBuffer, cpp_int(0));
 
     std::ofstream file("PI.txt");
 
@@ -99,26 +132,50 @@ void calculateValues(CalculationParams params)
 {
     const uint32_t seed = std::random_device()();
     boost::random::mt11213b gen(seed);
-    boost::array<uint32_t, 4096> buffer;
+    boost::array<uint32_t, RandomsBufferSize * 2> buffer;
+    cpp_int
+        generatedCoprimes(0),
+        generatedNumbers(0);
 
-    constexpr auto middle = buffer.static_size / 2;
-    BOOST_STATIC_ASSERT_MSG(buffer.static_size % 2 == 0, "buffer size must be even");
+    auto &[numCoprimes,
+           numIterations,
+           updatePeriod,
+           minIterations,
+           updatingMutex,
+           notifyChanges] = params;
 
-    const auto &[numOfCoprimes, iterations, limit] = params;
-
-    while (*iterations < limit)
+    bool done = false;
+    while (!done)
     {
-        gen.generate(buffer.begin(), buffer.end());
+        while (generatedNumbers < updatePeriod)
+        {
+            gen.generate(buffer.begin(), buffer.end());
 
-        *numOfCoprimes += boost::algorithm::transform_reduce(
-            buffer.begin(),
-            buffer.begin() + middle,
-            buffer.begin() + middle,
-            0L,
-            std::plus(),
-            [](const auto &a, const auto &b)
-            { return boost::integer::gcd(a, b) == 1; });
+            generatedCoprimes += boost::algorithm::transform_reduce(
+                buffer.begin(),
+                buffer.begin() + RandomsBufferSize,
+                buffer.begin() + RandomsBufferSize,
+                0L,
+                std::plus(),
+                [](const auto &a, const auto &b)
+                { return boost::integer::gcd(a, b) == 1; });
 
-        *iterations += middle;
+            generatedNumbers += RandomsBufferSize;
+        }
+
+        {
+            boost::lock_guard lock(updatingMutex);
+
+            numCoprimes += generatedCoprimes;
+            numIterations += generatedNumbers;
+
+            minIterations -= numIterations;
+            done = minIterations <= 0;
+        }
+
+        generatedCoprimes = 0;
+        generatedNumbers = 0;
+
+        notifyChanges.post();
     }
 }
