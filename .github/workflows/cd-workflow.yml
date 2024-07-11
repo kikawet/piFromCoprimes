@@ -39,9 +39,9 @@ jobs:
     name: Docker Build, Tag, Push
     if: ${{ github.ref == 'refs/heads/master' }} # only deploy when run on master
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    
+    - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
     - name: Login to DockerHub
       uses: docker/login-action@v2.1.0
       with:
