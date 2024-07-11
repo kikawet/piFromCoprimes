@@ -18,8 +18,8 @@ build: $(SRC)
 
 debug: $(SRC)
 	mkdir -p $@
-	$(CXX) $(COMMON_FLAGS) -ggdb -o $@/$(TARGET) $(SRC)
-
+	$(CXX) -ggdb $(COMMON_FLAGS) -o $@/$(TARGET) $(SRC) $(LIBS)
+	
 docker: $(SRC)
 	docker build -f ./Docker/Dockerfile -t kikawet/pifromcoprimes:latest .
 
