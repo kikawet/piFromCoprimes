@@ -1,15 +1,29 @@
-all:
-	mkdir -p build
-	g++ -O0 -Wall -Wextra -pedantic -std=c++17 -o build/main main.cpp -pthread -lboost_thread -lboost_chrono -lboost_random
+CXX := g++
+COMMON_FLAGS := -Wall -Wextra -pedantic -std=c++20
+LIBS := -pthread -lboost_thread -lboost_chrono -lboost_random
+SRC := pfc.cpp
+TARGET := pfc
+
+MAKEFLAGS += -j2
+
+all: release debug
+
+release: $(SRC)
+	mkdir -p $@
+	$(CXX) -O3 $(COMMON_FLAGS) -o $@/$(TARGET) $(SRC) $(LIBS)
+	
+build: $(SRC)
+	mkdir -p $@
+	$(CXX) -O0 $(COMMON_FLAGS) -o $@/$(TARGET) $(SRC) $(LIBS)
+
+debug: $(SRC)
+	mkdir -p $@
+	$(CXX) -ggdb $(COMMON_FLAGS) -o $@/$(TARGET) $(SRC) $(LIBS)
+	
+docker: $(SRC)
+	docker build -f ./Docker/Dockerfile -t kikawet/pifromcoprimes:latest .
 
 clean:
-	rm -rf build
-	rm -rf release
-	rm -f *.gcda
-	rm -f *.gcno
-	rm -f *.gcov
+	rm -rf build release debug
+	rm -f *.gcda *.gcno *.gcov
 	rm -rf bw-output
-
-compile:
-	mkdir -p release
-	g++ -O3 -Wall -Wextra -pedantic -std=c++17 -o release/main main.cpp  -pthread -lboost_thread -lboost_chrono -lboost_random
