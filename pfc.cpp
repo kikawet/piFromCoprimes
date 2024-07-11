@@ -1,3 +1,4 @@
+#include <boost/array.hpp>
 #include <boost/algorithm/cxx17/reduce.hpp>
 #include <boost/algorithm/cxx17/transform_reduce.hpp>
 #include <boost/integer/common_factor.hpp>
@@ -7,7 +8,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/smart_ptr/make_unique.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/thread/thread.hpp>
+#include <boost/thread.hpp>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -18,7 +19,6 @@ using namespace boost::multiprecision;
 using namespace std::chrono_literals;
 
 #define RandomsBufferSize 2048
-#define NumOfThreads 5
 
 struct CalculationParams
 {
@@ -43,18 +43,22 @@ std::ostream &outputPi(std::ostream &output, const cpp_int &numOfCoprimes, const
 
 int main()
 {
+    const uint32_t numOfThreads = std::max(1u, boost::thread::hardware_concurrency());
+    std::cout << "Working with " << numOfThreads << " threads\n";
+
     const cpp_int
-        minIterations = (cpp_int(1) << 128),
-        updatePeriod = (cpp_int(1) << 24);
+        minIterations = (cpp_int(1) << 128u),
+        updatePeriod = (cpp_int(1) << 24u);
 
     cpp_int sumNumCoprimes, sumNumIterations;
 
     std::vector<CalculationThread> threads;
-    threads.reserve(NumOfThreads);
+
+    threads.reserve(numOfThreads);
 
     boost::interprocess::interprocess_semaphore buffersUpdated(0);
 
-    for (int i = 0; i < NumOfThreads; ++i)
+    for (uint i = 0; i < numOfThreads; ++i)
     {
         auto threadMutex = std::make_unique<boost::mutex>();
         threads.emplace_back(CalculationThread{
