@@ -99,7 +99,7 @@ int main()
             thread.numIterations = 0;
         }
 
-        outputPi(std::cout, sumNumCoprimes, sumNumIterations) << '\n';
+        outputPi(std::cout, sumNumCoprimes, sumNumIterations) << std::endl;
 
         std::erase_if(threads,
                       [](auto &thread)
@@ -111,7 +111,8 @@ int main()
     std::ofstream file("PI.txt");
 
     outputPi(
-        file << "PI = " << std::setprecision(100),
+        file << "PI = \n"
+             << std::setprecision(100),
         sumNumCoprimes,
         sumNumIterations)
         << std::endl;
