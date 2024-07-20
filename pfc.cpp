@@ -18,7 +18,7 @@
 using namespace boost::multiprecision;
 using namespace std::chrono_literals;
 
-#define RandomsBufferSize 2048
+const uint32_t RandomsBufferSize = 2048;
 
 struct CalculationParams
 {
@@ -46,11 +46,11 @@ int main()
     const uint32_t numOfThreads = std::max(1u, boost::thread::hardware_concurrency());
     std::cout << "Working with " << numOfThreads << " threads\n";
 
-    const cpp_int
-        minIterations = (cpp_int(1) << 128u),
-        updatePeriod = (cpp_int(1) << 24u);
+    const cpp_int minIterations = (cpp_int(1) << 128u);
+    const cpp_int updatePeriod = (cpp_int(1) << 24u);
 
-    cpp_int sumNumCoprimes, sumNumIterations;
+    cpp_int sumNumCoprimes;
+    cpp_int sumNumIterations;
 
     std::vector<CalculationThread> threads;
 
@@ -101,11 +101,9 @@ int main()
 
         outputPi(std::cout, sumNumCoprimes, sumNumIterations) << '\n';
 
-        const auto firstRemove = std::remove_if(threads.begin(), threads.end(),
-                                                [](auto &thread)
-                                                { return thread.thread->try_join_for(boost::chrono::seconds(1)); });
-
-        threads.erase(firstRemove, threads.end());
+        std::erase_if(threads,
+                      [](auto &thread)
+                      { return thread.thread->try_join_for(boost::chrono::seconds(1)); });
     }
 
     std::cout << "All threads are over" << std::endl;
@@ -151,9 +149,8 @@ void calculateValues(CalculationParams params)
     const uint32_t seed = std::random_device()();
     boost::random::mt11213b gen(seed);
     boost::array<uint32_t, RandomsBufferSize * 2> buffer;
-    cpp_int
-        generatedCoprimes(0),
-        generatedNumbers(0);
+    cpp_int generatedCoprimes(0);
+    cpp_int generatedNumbers(0);
 
     auto &[numCoprimes,
            numIterations,
