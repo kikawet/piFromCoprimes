@@ -141,7 +141,7 @@ inline uint32_t binary_gcd(uint32_t u, uint32_t v)
         v >>= __builtin_ctz(v);
         if (u > v)
             std::swap(u, v);
-    } while ((v -= u));
+    } while (v -= u);
     return u << shift;
 }
 
