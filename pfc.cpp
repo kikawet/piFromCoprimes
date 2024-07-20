@@ -132,6 +132,20 @@ std::ostream &outputPi(std::ostream &output, const cpp_int &numOfCoprimes, const
                 (cpp_dec_float_100)totalNumbers));
 }
 
+// https://math.stackexchange.com/a/2156132
+inline uint32_t binary_gcd(uint32_t u, uint32_t v)
+{
+    auto shift = __builtin_ctz(u | v);
+    u >>= __builtin_ctz(u);
+    do
+    {
+        v >>= __builtin_ctz(v);
+        if (u > v)
+            std::swap(u, v);
+    } while ((v -= u));
+    return u << shift;
+}
+
 void calculateValues(CalculationParams params)
 {
     const uint32_t seed = std::random_device()();
@@ -162,7 +176,13 @@ void calculateValues(CalculationParams params)
                 0L,
                 std::plus(),
                 [](const auto &a, const auto &b)
-                { return boost::integer::gcd(a, b) == 1; });
+                {
+                    // Both are even numbers, divisible by at least 2.
+                    if (!((a | b) & 1))
+                        return false;
+
+                    return binary_gcd(a, b) == 1;
+                });
 
             generatedNumbers += RandomsBufferSize;
         }
