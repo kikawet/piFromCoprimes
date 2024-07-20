@@ -12,11 +12,14 @@ WORKDIR /usr/src/pifromcoprimes
 COPY Makefile .
 COPY pfc.cpp .
 
-
 # This command compiles your app using GCC, adjust for your source code
 RUN make release
+
+RUN addgroup -S nonroot && adduser -S nonroot -G nonroot
+
+USER nonroot
 
 # This command runs your application, comment out this line to compile only
 CMD ["/bin/sh", "-c", "./release/pfc"]
 
-LABEL Name=pifromcoprimes Version=1.1.0
+LABEL Name=pifromcoprimes Version=1.2.0

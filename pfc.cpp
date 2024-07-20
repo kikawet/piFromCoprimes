@@ -18,7 +18,7 @@
 using namespace boost::multiprecision;
 using namespace std::chrono_literals;
 
-#define RandomsBufferSize 2048
+const uint32_t RandomsBufferSize = 2048;
 
 struct CalculationParams
 {
@@ -46,11 +46,11 @@ int main()
     const uint32_t numOfThreads = std::max(1u, boost::thread::hardware_concurrency());
     std::cout << "Working with " << numOfThreads << " threads\n";
 
-    const cpp_int
-        minIterations = (cpp_int(1) << 128u),
-        updatePeriod = (cpp_int(1) << 24u);
+    const cpp_int minIterations = (cpp_int(1) << 128u);
+    const cpp_int updatePeriod = (cpp_int(1) << 24u);
 
-    cpp_int sumNumCoprimes, sumNumIterations;
+    cpp_int sumNumCoprimes;
+    cpp_int sumNumIterations;
 
     std::vector<CalculationThread> threads;
 
@@ -99,13 +99,11 @@ int main()
             thread.numIterations = 0;
         }
 
-        outputPi(std::cout, sumNumCoprimes, sumNumIterations) << '\n';
+        outputPi(std::cout, sumNumCoprimes, sumNumIterations) << std::endl;
 
-        const auto firstRemove = std::remove_if(threads.begin(), threads.end(),
-                                                [](auto &thread)
-                                                { return thread.thread->try_join_for(boost::chrono::seconds(1)); });
-
-        threads.erase(firstRemove, threads.end());
+        std::erase_if(threads,
+                      [](auto &thread)
+                      { return thread.thread->try_join_for(boost::chrono::seconds(1)); });
     }
 
     std::cout << "All threads are over" << std::endl;
@@ -113,7 +111,8 @@ int main()
     std::ofstream file("PI.txt");
 
     outputPi(
-        file << "PI = " << std::setprecision(100),
+        file << "PI = \n"
+             << std::setprecision(100),
         sumNumCoprimes,
         sumNumIterations)
         << std::endl;
@@ -132,14 +131,27 @@ std::ostream &outputPi(std::ostream &output, const cpp_int &numOfCoprimes, const
                 (cpp_dec_float_100)totalNumbers));
 }
 
+// https://math.stackexchange.com/a/2156132
+inline uint32_t binary_gcd(uint32_t u, uint32_t v)
+{
+    auto shift = __builtin_ctz(u | v);
+    u >>= __builtin_ctz(u);
+    do
+    {
+        v >>= __builtin_ctz(v);
+        if (u > v)
+            std::swap(u, v);
+    } while (v -= u);
+    return u << shift;
+}
+
 void calculateValues(CalculationParams params)
 {
     const uint32_t seed = std::random_device()();
     boost::random::mt11213b gen(seed);
     boost::array<uint32_t, RandomsBufferSize * 2> buffer;
-    cpp_int
-        generatedCoprimes(0),
-        generatedNumbers(0);
+    cpp_int generatedCoprimes(0);
+    cpp_int generatedNumbers(0);
 
     auto &[numCoprimes,
            numIterations,
@@ -162,7 +174,13 @@ void calculateValues(CalculationParams params)
                 0L,
                 std::plus(),
                 [](const auto &a, const auto &b)
-                { return boost::integer::gcd(a, b) == 1; });
+                {
+                    // Both are even numbers, divisible by at least 2.
+                    if (!((a | b) & 1))
+                        return false;
+
+                    return binary_gcd(a, b) == 1;
+                });
 
             generatedNumbers += RandomsBufferSize;
         }
