@@ -8,3 +8,5 @@ bw-output
 *.zip
 .vs
 .idea
+*.html
+perf*
