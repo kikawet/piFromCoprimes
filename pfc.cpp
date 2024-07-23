@@ -131,18 +131,29 @@ std::ostream &outputPi(std::ostream &output, const cpp_int &numOfCoprimes, const
                 (cpp_dec_float_100)totalNumbers));
 }
 
-// https://math.stackexchange.com/a/2156132
-inline uint32_t binary_gcd(uint32_t u, uint32_t v)
+// https://en.algorithmica.org/hpc/algorithms/gcd/#binary-gcd
+inline uint32_t binaryGCD(uint32_t a, uint32_t b)
 {
-    auto shift = __builtin_ctz(u | v);
-    u >>= __builtin_ctz(u);
-    do
+    int atz = __builtin_ctz(a);
+    int btz = __builtin_ctz(b);
+    int shift = std::min(atz, btz);
+    b >>= btz;
+
+    while (a != 0)
     {
-        v >>= __builtin_ctz(v);
-        if (u > v)
-            std::swap(u, v);
-    } while (v -= u);
-    return u << shift;
+        a >>= atz;
+        int diff = b - a;
+        atz = __builtin_ctz(diff);
+        b = std::min(a, b);
+        a = std::abs(diff);
+    }
+
+    return b << shift;
+}
+
+inline bool bothEven(uint32_t a, uint32_t b)
+{
+    return !((a | b) & 1);
 }
 
 void calculateValues(CalculationParams params)
@@ -176,10 +187,10 @@ void calculateValues(CalculationParams params)
                 [](const auto &a, const auto &b)
                 {
                     // Both are even numbers, divisible by at least 2.
-                    if (!((a | b) & 1))
+                    if (bothEven(a, b))
                         return false;
 
-                    return binary_gcd(a, b) == 1;
+                    return binaryGCD(a, b) == 1;
                 });
 
             generatedNumbers += RandomsBufferSize;
