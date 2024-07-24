@@ -8,7 +8,7 @@ You don't need to install nothing just click "Run" and watch it go.
 
 Once is over is going to generate a file called _PI.txt_ with 100 digits in case you want it. 
 
-If you're going to download the code and run it in your machine you're going to need [Boost](https://www.boost.org/) and C++17.
+If you're going to download the code and run it in your machine you're going to need [Boost](https://www.boost.org/) and C++20.
 
 This program runs in multithreading (5 threads by default) you can change the number of threads in the code and how many iterations is going to do,
 so far is going to run 2<sup>128</sup> (340.282.366.920.938.463.463.374.607.431.768.211.456).
@@ -37,7 +37,7 @@ No hace falta instalarse nada, para ejecutarlo solo darle a ejecutar en la pági
 
 Cuando termine se generará un fichero llamado _PI.txt_ con las 100 primeros digitos calculados.
 
-En caso de quere descargar el proyecto para ejecutarlo en local es necesario tener instalado [Boost](https://www.boost.org/) y C++17.
+En caso de quere descargar el proyecto para ejecutarlo en local es necesario tener instalado [Boost](https://www.boost.org/) y C++20.
 
 La aplicación se ejecuta en paralelo (5 hilos por defecto) se puede cambiar el número de hilos dentro del código así como el número total de iteracionesa ejecutar, 
 por defecto se calculan 2<sup>128</sup> (340.282.366.920.938.463.463.374.607.431.768.211.456) iteraciones.
