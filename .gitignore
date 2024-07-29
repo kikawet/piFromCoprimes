@@ -10,3 +10,6 @@ bw-output
 .idea
 *.html
 perf*
+CMakeFiles
+cmake_install.cmake
+CMakeCache.txt
