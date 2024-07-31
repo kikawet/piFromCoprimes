@@ -17,7 +17,18 @@ using boost::compute::lambda::_2;
 
 int main()
 {
+    constexpr uint32_t randomsBufferSize = 200'000'000;
+
     sfmt_t sfmt;
+    if (sfmt_get_min_array_size32(&sfmt) > randomsBufferSize)
+    {
+        std::cerr << "array size too small!" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    const uint32_t seed = std::random_device()();
+    sfmt_init_gen_rand(&sfmt, seed);
+
     // get the default device
     compute::device gpu = compute::system::default_device();
 
@@ -32,25 +43,34 @@ int main()
     // create command queue with profiling enabled
     compute::command_queue queue(context, gpu);
 
-    constexpr uint32_t randomsBufferSize = 200'000'000;
     compute::vector<uint32_t> device_vector(randomsBufferSize * 2, context);
-    std::vector<uint32_t> host_vector(device_vector.size());
     compute::vector<uint32_t> device_res(randomsBufferSize, context);
 
-    const uint32_t seed = std::random_device()();
-    boost::random::mt11213b gen(seed);
+    std::chrono::steady_clock::time_point begin_generate = std::chrono::steady_clock::now();
 
-    gen.generate(host_vector.begin(), host_vector.end());
+    uint32_t *host_vector = static_cast<uint32_t *>(std::aligned_alloc(16, sizeof(uint32_t) * randomsBufferSize * 2));
+
+    sfmt_fill_array32(&sfmt, host_vector, device_vector.size());
+
+    std::chrono::steady_clock::time_point end_generate = std::chrono::steady_clock::now();
 
     std::chrono::steady_clock::time_point begin_copy = std::chrono::steady_clock::now();
 
     compute::copy(
-        host_vector.begin(), host_vector.end(), device_vector.begin(), queue);
+        host_vector, host_vector + device_vector.size(), device_vector.begin(), queue);
+
+    std::cout << "Randoms generated starting to compile kernel" << std::endl;
 
     std::chrono::steady_clock::time_point end_copy = std::chrono::steady_clock::now();
 
+    // https://en.algorithmica.org/hpc/algorithms/gcd/#binary-gcd
     BOOST_COMPUTE_FUNCTION(uint, coprimes_check, (uint a, uint b),
                            {
+                               if (a == 0)
+                                   return b;
+                               if (b == 0)
+                                   return a;
+
                                uint atz = ctz(a);
                                uint btz = ctz(b);
                                uint shift = min(atz, btz);
@@ -72,10 +92,6 @@ int main()
 
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
-    // engine.generate(device_vector.begin(), device_vector.end(), queue);
-
-#if 1
-
     compute::transform_reduce(device_vector.begin(),
                               device_vector.begin() + randomsBufferSize,
                               device_vector.begin() + randomsBufferSize,
@@ -84,37 +100,24 @@ int main()
                               compute::plus<uint32_t>(),
                               queue);
 
-#else
-    compute::transform(device_vector.begin(),
-                       device_vector.begin() + randomsBufferSize,
-                       device_vector.begin() + randomsBufferSize,
-                       device_res.begin(),
-                       coprimes_check,
-                       queue);
-
-    compute::partial_sum(
-        device_res.begin(),
-        device_res.end(),
-        device_res.begin(),
-        queue);
-
-#endif
     std::cout << "Waiting for GPU to finish" << std::endl;
 
     queue.finish();
+    std::free(host_vector);
 
     // copy data from the host to the device
-
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    const uint32_t totalCoprimes = *device_res.begin();
 
     // print elapsed time in milliseconds
-
-    std::cout << "Generated\t" << randomsBufferSize * 2 << " numbers\n"
+    std::cout << "Generated\t" << device_vector.size() << " numbers\n"
               << "Added\t\t" << randomsBufferSize << " pairs\n"
               << "Time program\t" << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]\n"
-              << "Time computing\t" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "[ms]\n"
+              << "Time generating\t" << std::chrono::duration_cast<std::chrono::milliseconds>(end_generate - begin_generate).count() << "[ms]\n"
               << "Time coping\t" << std::chrono::duration_cast<std::chrono::milliseconds>(end_copy - begin_copy).count() << "[ms]\n"
-              << "Total coprimes\t" << *device_res.begin() << std::endl;
+              << "Time computing\t" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "[ms]\n"
+              << "Total coprimes\t" << totalCoprimes << '\n'
+              << "PI\t\t" << std::sqrt(6. / ((double)totalCoprimes / (double)randomsBufferSize)) << std::endl;
 
     return 0;
 }
