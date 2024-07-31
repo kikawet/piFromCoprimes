@@ -45,3 +45,19 @@ IF (${OpenCL_FOUND})
         ${Boost_LIBRARIES} ${Boost_DEPENDENCIES}
     )
 ENDIF (${OpenCL_FOUND})
+
+
+project(pfc_docker VERSION 1.0)
+find_program(Docker_EXECUTABLE docker)
+
+if(NOT Docker_EXECUTABLE)
+    message(VERBOSE "Cannot find the docker executable")
+else()
+    message(VERBOSE "Building docker image")
+    add_custom_target(pfc_docker
+    COMMAND ${Docker_EXECUTABLE}
+        build -f ${CMAKE_SOURCE_DIR}/Docker/Dockerfile
+        -t kikawet/pifromcoprimes:latest
+        ${CMAKE_SOURCE_DIR}
+    )
+endif()
